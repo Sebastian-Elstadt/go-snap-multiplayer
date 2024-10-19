@@ -10,6 +10,7 @@ import (
 	"os"
 )
 
+var reader *bufio.Reader
 var conn net.Conn
 var isPlayerTurn = false
 
@@ -25,6 +26,8 @@ func awaitServerBytes(size uint) []byte {
 }
 
 func main() {
+	reader = bufio.NewReader(os.Stdin)
+
 	fmt.Println("welcome to snapgame.")
 	fmt.Println()
 	fmt.Println("your controls are:")
@@ -35,8 +38,10 @@ func main() {
 	fmt.Println("connecting to server...")
 
 	var err error
-	if conn, err = net.Dial("tcp", "localhost:8000"); err != nil {
-		log.Fatalf("failed to connect to server: %v", err)
+	if conn, err = net.Dial("tcp", "elstadt.com:8000"); err != nil {
+		fmt.Printf("failed to connect to server: %v\n", err)
+		reader.ReadByte()
+		return
 	}
 
 	fmt.Println("you are connected to the server.")
@@ -46,8 +51,6 @@ func main() {
 }
 
 func handlePlayerInput() {
-	reader := bufio.NewReader(os.Stdin)
-
 	for {
 		char, err := reader.ReadByte()
 		if err != nil {
@@ -98,6 +101,7 @@ func askCardCount() {
 
 func stopGame() {
 	conn.Close()
+	reader.ReadByte()
 	os.Exit(0)
 }
 
